@@ -55,9 +55,10 @@ export default function TextEditorPage() {
 
       const data = await res.json();
       if (data.success) {
-        setContent("");
         await fetchNotes(user.uid);
-        alert("Note saved successfully ✅");
+        alert("Note saved successfully");
+
+        setContent("");
       } else {
         alert("Error: " + data.error);
       }

@@ -91,7 +91,6 @@ const Tiptap = ({ onChange }: { onChange?: (content: string) => void }) => {
         </button>
       </div>
 
-      {/* Editor Area */}
       <EditorContent
         editor={editor}
         className="min-h-[250px] max-h-[400px] overflow-y-auto p-3 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-blue-400 focus:outline-none prose prose-sm sm:prose md:prose-md"
