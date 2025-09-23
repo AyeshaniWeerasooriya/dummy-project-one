@@ -12,35 +12,48 @@ import {
   Strikethrough,
 } from "lucide-react";
 
-const Tiptap = () => {
+const Tiptap = ({ onChange }: { onChange?: (content: string) => void }) => {
   const editor = useEditor({
     extensions: [StarterKit],
     content: "<p></p>",
     immediatelyRender: false,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      if (onChange) onChange(html);
+    },
   });
 
   if (!editor) return null;
 
+  const buttonClass = (active: boolean) =>
+    `flex items-center justify-center w-10 h-10 rounded-md transition-colors duration-200
+     ${
+       active
+         ? "bg-blue-600 text-white"
+         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+     }`;
+
   return (
-    <div className="border p-3 rounded-md border-black">
-      <div className="mb-2 flex gap-2 justify-center">
+    <div className="border border-gray-300 rounded-xl p-4 shadow-md bg-white">
+      <div className="mb-3 flex flex-wrap gap-2 justify-center">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={editor.isActive("bold") ? "font-bold text-blue-600" : ""}
+          className={buttonClass(editor.isActive("bold"))}
+          title="Bold"
         >
           <Bold />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={editor.isActive("italic") ? "italic text-blue-600" : ""}
+          className={buttonClass(editor.isActive("italic"))}
+          title="Italic"
         >
           <Italic />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={
-            editor.isActive("strike") ? "line-through text-blue-600" : ""
-          }
+          className={buttonClass(editor.isActive("strike"))}
+          title="Strikethrough"
         >
           <Strikethrough />
         </button>
@@ -48,9 +61,8 @@ const Tiptap = () => {
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 1 }) ? "text-blue-600" : ""
-          }
+          className={buttonClass(editor.isActive("heading", { level: 1 }))}
+          title="Heading 1"
         >
           <Heading1 />
         </button>
@@ -58,29 +70,31 @@ const Tiptap = () => {
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 2 }).run()
           }
-          className={
-            editor.isActive("heading", { level: 2 }) ? "text-blue-600" : ""
-          }
+          className={buttonClass(editor.isActive("heading", { level: 2 }))}
+          title="Heading 2"
         >
           <Heading2 />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editor.isActive("bulletList") ? "text-blue-600" : ""}
+          className={buttonClass(editor.isActive("bulletList"))}
+          title="Bullet List"
         >
           <List />
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editor.isActive("orderedList") ? "text-blue-600" : ""}
+          className={buttonClass(editor.isActive("orderedList"))}
+          title="Numbered List"
         >
           <ListOrdered />
         </button>
       </div>
 
+      {/* Editor Area */}
       <EditorContent
         editor={editor}
-        className="border p-2 max-h-[200px] max-w-3xl min-h-[200px] min-w-3xl"
+        className="min-h-[250px] max-h-[400px] overflow-y-auto p-3 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-blue-400 focus:outline-none prose prose-sm sm:prose md:prose-md"
       />
     </div>
   );
