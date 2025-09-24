@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from "next";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import fs from "fs";
+import path from "path";
+import { marked } from "marked";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,18 +16,39 @@ export default async function handler(
 
   try {
     const { uid } = req.query;
-    if (!uid) {
-      return res.status(400).json({ success: false, error: "Missing user ID" });
+    if (!uid || Array.isArray(uid)) {
+      return res.status(400).json({ success: false, error: "Invalid user ID" });
     }
 
-    const notesRef = collection(db, "notes");
-    const q = query(notesRef, where("uid", "==", uid));
+    const dir = path.join(process.cwd(), "markdown-files", uid);
+    let notes: any[] = [];
 
-    const snapshot = await getDocs(q);
-    const notes = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    if (fs.existsSync(dir)) {
+      const files = fs.readdirSync(dir).filter((file) => file.endsWith(".md"));
+
+      notes = files.map((file) => {
+        const markdown = fs.readFileSync(path.join(dir, file), "utf-8");
+
+        const lines = markdown.split("\n");
+        const firstLine = lines[0].replace(/^#\s*/, "");
+        const titleMarkdown = firstLine.trim() || "Untitled";
+
+        const titleHtml = marked.parse(titleMarkdown);
+        const contentHtml = marked.parse(markdown);
+
+        const timestamp = Number(path.basename(file, ".md"));
+        const createdAt = !isNaN(timestamp)
+          ? new Date(timestamp).toISOString()
+          : null;
+
+        return {
+          id: file,
+          title: titleHtml,
+          html: contentHtml,
+          createdAt,
+        };
+      });
+    }
 
     return res.status(200).json({ success: true, notes });
   } catch (err: any) {
