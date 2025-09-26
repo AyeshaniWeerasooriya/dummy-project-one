@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyCKItS9SgkA0qPLWrKWOFKGhaNXWX0-2_M",
+  authDomain: "learning-management-syst-49be1.firebaseapp.com",
+  projectId: "learning-management-syst-49be1",
+  storageBucket: "learning-management-syst-49be1.appspot.com",
+  messagingSenderId: "970256693769",
+  appId: "1:970256693769:web:7d7820ceec1af70dfb56d8",
+  measurementId: "G-ENE9L3EGHD",
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
