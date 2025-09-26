@@ -3,8 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import { marked } from "marked";
-import admin from "@/lib/firebaseAdmin"; // use your initialized Firebase Admin
-
+import admin from "@/lib/firebaseAdmin";
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

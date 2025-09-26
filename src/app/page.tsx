@@ -11,10 +11,7 @@ export default function Home() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    console.log(
-      "Firebase authDomain:",
-      process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    );
+    console.log("Firebase current user:", auth.currentUser);
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         router.push("/user-editor");
