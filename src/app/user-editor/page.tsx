@@ -119,7 +119,7 @@ export default function TextEditorPage() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="flex-1 bg-white rounded-tr-3xl rounded-br-3xl shadow-xl p-8 flex flex-col border-r border-gray-200">
+      <div className="flex-1 bg-white rounded-tr-3xl  shadow-xl p-8 flex flex-col border-r border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-3xl font-bold text-indigo-700 tracking-tight">
             📖 Create Study Notes
@@ -142,7 +142,7 @@ export default function TextEditorPage() {
           </Button>
         </div>
       </div>
-      <div className="w-[40%] bg-gradient-to-b from-indigo-50 to-white rounded-tl-3xl rounded-bl-3xl shadow-xl p-8 flex flex-col relative">
+      <div className="w-[40%] bg-gradient-to-b from-indigo-50 to-white   shadow-xl p-8 flex flex-col relative">
         <div className="absolute top-6 right-6 z-20">
           <Button
             variant="outline"
