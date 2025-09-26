@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#firebase service acount json
+src/lib/firebase-service-account.json
+
+#uploaded markdown files
+markdown-files/

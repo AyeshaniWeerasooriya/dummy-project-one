@@ -3,8 +3,20 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import TurndownService from "turndown";
 import fs from "fs";
 import path from "path";
+import { getAuth } from "firebase-admin/auth";
+import { initializeApp, cert, getApps } from "firebase-admin/app";
 
 const turndown = new TurndownService();
+
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,16 +29,22 @@ export default async function handler(
   }
 
   try {
-    const { title, html, uid } = req.body;
-    if (!html || !uid) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Missing content or user ID" });
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    const decoded = await getAuth().verifyIdToken(idToken);
+    const uid = decoded.uid;
+
+    const { title, html } = req.body;
+    if (!html) {
+      return res.status(400).json({ success: false, error: "Missing content" });
     }
 
     const titleMarkdown = title ? turndown.turndown(title) : "Untitled";
     const markdown = turndown.turndown(html);
-
     const fullContent = `# ${titleMarkdown}\n\n${markdown}`;
 
     const dir = path.join(process.cwd(), "markdown-files", uid);
@@ -36,7 +54,6 @@ export default async function handler(
 
     const fileName = `${Date.now()}.md`;
     const filePath = path.join(dir, fileName);
-
     fs.writeFileSync(filePath, fullContent, "utf-8");
 
     const metaPath = path.join(dir, "notes.json");

@@ -3,6 +3,8 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import TextAlign from "@tiptap/extension-text-align";
+import { useEffect } from "react";
 import {
   Bold,
   Heading1,
@@ -11,32 +13,54 @@ import {
   List,
   ListOrdered,
   Strikethrough,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from "lucide-react";
 
 const Tiptap = ({
   onChangeTitle,
   onChangeContent,
+  reset = false,
 }: {
   onChangeTitle?: (content: string) => void;
   onChangeContent?: (content: string) => void;
+  reset?: boolean;
 }) => {
+  const editorExtensions = [
+    StarterKit.configure({
+      heading: { levels: [1, 2, 3] },
+      bulletList: { keepMarks: true, keepAttributes: false },
+      orderedList: { keepMarks: true, keepAttributes: false },
+      listItem: {},
+    }),
+    TextAlign.configure({ types: ["heading", "paragraph"] }),
+  ];
+
   const titleEditor = useEditor({
-    extensions: [StarterKit],
+    extensions: editorExtensions,
     content: "<p></p>",
-    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       if (onChangeTitle) onChangeTitle(editor.getHTML());
     },
+    immediatelyRender: false,
   });
 
   const contentEditor = useEditor({
-    extensions: [StarterKit],
+    extensions: editorExtensions,
     content: "<p></p>",
-    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       if (onChangeContent) onChangeContent(editor.getHTML());
     },
+    immediatelyRender: false,
   });
+
+  useEffect(() => {
+    if (reset && titleEditor && contentEditor) {
+      titleEditor.commands.setContent("<p></p>");
+      contentEditor.commands.setContent("<p></p>");
+    }
+  }, [reset, titleEditor, contentEditor]);
 
   if (!titleEditor || !contentEditor) return null;
 
@@ -99,6 +123,27 @@ const Tiptap = ({
       >
         <ListOrdered />
       </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        className={buttonClass(editor.isActive({ textAlign: "left" }))}
+        title="Align Left"
+      >
+        <AlignLeft />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        className={buttonClass(editor.isActive({ textAlign: "center" }))}
+        title="Align Center"
+      >
+        <AlignCenter />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        className={buttonClass(editor.isActive({ textAlign: "right" }))}
+        title="Align Right"
+      >
+        <AlignRight />
+      </button>
     </div>
   );
 
@@ -113,7 +158,6 @@ const Tiptap = ({
           className="min-h-[50px] p-2 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-blue-400 focus:outline-none prose prose-sm sm:prose md:prose-md"
         />
       </div>
-
       <div>
         <h4 className="font-semibold mb-2">Content</h4>
         {renderToolbar(contentEditor)}

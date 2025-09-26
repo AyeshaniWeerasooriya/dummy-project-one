@@ -1,9 +1,37 @@
 "use client";
 
 import { LoginAlertBox } from "@/app/components/loginAlertBox";
+import { auth } from "@/lib/firebase";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true); // Track loading state
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        router.push("/user-editor");
+      } else {
+        setCheckingAuth(false); // Not logged in, stop loading
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  if (checkingAuth) {
+    // Render a loader while auth state is being checked
+    return (
+      <div className="flex items-center justify-center h-screen bg-blue-950 text-white text-xl">
+        Loading...
+      </div>
+    );
+  }
+
+  // If not logged in, render the login page
   return (
     <div className="h-screen grid grid-cols-1 md:grid-cols-2">
       <div className="relative w-full h-96 md:h-full">

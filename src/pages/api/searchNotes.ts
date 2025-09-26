@@ -3,6 +3,18 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import { marked } from "marked";
+import { getAuth } from "firebase-admin/auth";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,12 +27,18 @@ export default async function handler(
   }
 
   try {
-    const { uid, q } = req.query;
-    if (!uid) {
-      return res.status(400).json({ success: false, error: "Missing user ID" });
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
     }
 
-    const dir = path.join(process.cwd(), "markdown-files", String(uid));
+    const idToken = authHeader.split("Bearer ")[1];
+    const decoded = await getAuth().verifyIdToken(idToken);
+    const uid = decoded.uid;
+
+    const { q } = req.query;
+
+    const dir = path.join(process.cwd(), "markdown-files", uid);
     const metaPath = path.join(dir, "notes.json");
 
     if (!fs.existsSync(metaPath)) {

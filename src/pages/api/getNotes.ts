@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import { marked } from "marked";
+import admin from "@/lib/firebaseAdmin"; // use your initialized Firebase Admin
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,10 +16,14 @@ export default async function handler(
   }
 
   try {
-    const { uid } = req.query;
-    if (!uid || Array.isArray(uid)) {
-      return res.status(400).json({ success: false, error: "Invalid user ID" });
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
     }
+
+    const idToken = authHeader.split("Bearer ")[1];
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const uid = decoded.uid;
 
     const dir = path.join(process.cwd(), "markdown-files", uid);
     let notes: any[] = [];
@@ -42,7 +47,7 @@ export default async function handler(
           : null;
 
         return {
-          id: file,
+          id: timestamp,
           title: titleHtml,
           html: contentHtml,
           createdAt,
