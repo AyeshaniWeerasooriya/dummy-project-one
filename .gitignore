@@ -45,3 +45,4 @@ src/lib/firebase-service-account.json
 
 #uploaded markdown files
 markdown-files/
+.firebase

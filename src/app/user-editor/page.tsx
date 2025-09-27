@@ -6,7 +6,15 @@ import { useRouter } from "next/navigation";
 import Tiptap from "../components/tipTap";
 import { Button } from "../components/ui/button";
 import { auth } from "@/lib/firebase";
-import { LogOut, Search } from "lucide-react";
+import { LogOut, Menu, Search, X } from "lucide-react";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTrigger,
+} from "../components/ui/drawer";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export default function TextEditorPage() {
   const router = useRouter();
@@ -118,85 +126,130 @@ export default function TextEditorPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="flex-1 bg-white rounded-tr-3xl  shadow-xl p-8 flex flex-col border-r border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-3xl font-bold text-indigo-700 tracking-tight">
-            📖 Create Study Notes
-          </h2>
-        </div>
-        <div className="overflow-y-auto pr-2">
-          <Tiptap
-            onChangeTitle={setTitle}
-            onChangeContent={setContent}
-            reset={resetEditors}
-          />
-        </div>
-        <div className="flex justify-center mt-6">
-          <Button
-            variant="outline"
-            className="bg-indigo-600 text-white text-lg font-semibold px-10 py-4 rounded-md shadow-md hover:bg-indigo-700 transition-all"
-            onClick={handleSubmit}
+    <div className="h-screen flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 relative z-10 mt-5">
+        <Drawer direction="left">
+          <DrawerTrigger asChild>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 shadow-sm"
+            >
+              <Menu size={18} />
+              Notes
+            </Button>
+          </DrawerTrigger>
+
+          <DrawerContent
+            dir="left"
+            className="bg-gradient-to-b from-indigo-50 to-white p-6 h-screen w-80 shadow-2xl flex flex-col pt-10"
           >
-            Save Note
-          </Button>
-        </div>
-      </div>
-      <div className="w-[40%] bg-gradient-to-b from-indigo-50 to-white   shadow-xl p-8 flex flex-col relative">
-        <div className="absolute top-6 right-6 z-20">
+            <DialogTitle>
+              <span className="sr-only">Notes Drawer</span>
+            </DialogTitle>
+
+            <div className="absolute top-4 right-6 z-20">
+              <DrawerClose asChild>
+                <Button
+                  variant="outline"
+                  className="bg-gray-200 text-gray-400 hover:bg-indigo-300 hover:text-white p-2 rounded-full"
+                >
+                  <X size={16} />
+                </Button>
+              </DrawerClose>
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-semibold text-gray-900 border-b pb-2 ">
+                📚 Your Study Notes
+              </h3>
+              <div className="relative w-full mt-3">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <Search className="text-gray-400" size={20} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search notes by title..."
+                  value={searchQuery}
+                  onChange={async (e) => {
+                    const q = e.target.value;
+                    setSearchQuery(q);
+                    await handleSearch(q);
+                  }}
+                  className="w-full pl-10 pr-3 p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 text-gray-700 shadow-sm"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex-1 overflow-y-auto">
+              {loading ? (
+                <p className="text-gray-500 text-center mt-6">
+                  Loading notes...
+                </p>
+              ) : notes.length === 0 ? (
+                <p className="text-gray-400 text-center mt-6">
+                  No notes yet. Start learning and take notes!
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {notes.map((note) => (
+                    <li
+                      key={note.id}
+                      className="cursor-pointer p-3 rounded-md border border-gray-200 bg-white hover:shadow-md hover:border-indigo-400 hover:bg-indigo-50 transition-all"
+                      onClick={() => router.push("/user-notes/" + note.id)}
+                    >
+                      <span
+                        dangerouslySetInnerHTML={{ __html: note.title }}
+                        className="text-lg font-semibold text-gray-800"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </DrawerContent>
+        </Drawer>
+
+        <h2 className="text-3xl font-bold text-indigo-700 tracking-tight absolute left-1/2 transform -translate-x-1/2">
+          📖 Create Your Study Notes
+        </h2>
+
+        <div className="absolute right-6">
           <Button
             variant="outline"
-            className="bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-red-600 transition-colors flex items-center gap-2 shadow-sm"
+            className="bg-gray-300 text-black font-bold px-4 py-2 rounded-md hover:bg-white hover:text-indigo-600 hover:border-indigo-600 flex items-center gap-2 shadow-sm"
             onClick={handleLogout}
           >
             <LogOut size={16} />
             Logout
           </Button>
         </div>
-        <div className="flex flex-col sticky top-0 z-10 bg-gradient-to-b from-indigo-50 to-white  pt-6">
-          <h3 className="text-2xl font-semibold text-gray-900 border-b pb-2">
-            📚 Your Study Notes
-          </h3>
-          <div className="relative w-full mt-2">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <Search className="text-gray-400" size={20} />
-            </div>
+      </div>
+
+      <div
+        className="flex-1 p-6"
+        style={{ marginLeft: "120px", marginRight: "140px" }}
+      >
+        <div className="bg-white rounded-3xl shadow-xl flex flex-col flex-1 p-8 h-full">
+          <div className="overflow-y-auto flex-1">
             <input
               type="text"
-              placeholder="Search notes by title..."
-              value={searchQuery}
-              onChange={async (e) => {
-                const q = e.target.value;
-                setSearchQuery(q);
-                await handleSearch(q);
-              }}
-              className="w-full pl-10 pr-3 p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400 text-gray-700 shadow-sm"
+              placeholder="Type your title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full mb-5 p-3 border border-indigo-500 rounded-md "
             />
+            <Tiptap onChangeContent={setContent} reset={resetEditors} />
           </div>
-        </div>
-        <div className="mt-2 flex-1 overflow-y-auto pt-2">
-          {loading ? (
-            <p className="text-gray-500 text-center mt-6">Loading notes...</p>
-          ) : notes.length === 0 ? (
-            <p className="text-gray-400 text-center mt-6">
-              No notes yet. Start learning and take notes!
-            </p>
-          ) : (
-            <ul className="space-y-4">
-              {notes.map((note) => (
-                <li
-                  key={note.id}
-                  className="cursor-pointer p-4 rounded-md border border-gray-200 bg-white hover:shadow-md hover:border-indigo-400 hover:bg-indigo-50 transition-all"
-                  onClick={() => router.push("/user-notes/" + note.id)}
-                >
-                  <span
-                    dangerouslySetInnerHTML={{ __html: note.title }}
-                    className="text-lg font-semibold text-gray-800"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
+
+          <div className="flex justify-center mt-6">
+            <Button
+              variant="outline"
+              className="bg-indigo-600 text-white text-lg font-semibold px-10 py-4 rounded-md shadow-md hover:bg-indigo-700 transition-all"
+              onClick={handleSubmit}
+            >
+              Save Note
+            </Button>
+          </div>
         </div>
       </div>
     </div>

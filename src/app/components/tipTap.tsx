@@ -19,11 +19,9 @@ import {
 } from "lucide-react";
 
 const Tiptap = ({
-  onChangeTitle,
   onChangeContent,
   reset = false,
 }: {
-  onChangeTitle?: (content: string) => void;
   onChangeContent?: (content: string) => void;
   reset?: boolean;
 }) => {
@@ -37,15 +35,6 @@ const Tiptap = ({
     TextAlign.configure({ types: ["heading", "paragraph"] }),
   ];
 
-  const titleEditor = useEditor({
-    extensions: editorExtensions,
-    content: "<p></p>",
-    onUpdate: ({ editor }) => {
-      if (onChangeTitle) onChangeTitle(editor.getHTML());
-    },
-    immediatelyRender: false,
-  });
-
   const contentEditor = useEditor({
     extensions: editorExtensions,
     content: "<p></p>",
@@ -56,13 +45,12 @@ const Tiptap = ({
   });
 
   useEffect(() => {
-    if (reset && titleEditor && contentEditor) {
-      titleEditor.commands.setContent("<p></p>");
+    if (reset && contentEditor) {
       contentEditor.commands.setContent("<p></p>");
     }
-  }, [reset, titleEditor, contentEditor]);
+  }, [reset, contentEditor]);
 
-  if (!titleEditor || !contentEditor) return null;
+  if (!contentEditor) return null;
 
   const buttonClass = (active: boolean) =>
     `flex items-center justify-center w-10 h-10 rounded-md transition-colors duration-200
@@ -150,21 +138,12 @@ const Tiptap = ({
   return (
     <div className="border border-gray-300 rounded-xl p-4 shadow-md bg-white flex flex-col gap-4">
       <div>
-        <h4 className="font-semibold mb-2">Title</h4>
-        {renderToolbar(titleEditor)}
-        <EditorContent
-          editor={titleEditor}
-          required
-          className="min-h-[50px] p-2 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-blue-400 focus:outline-none prose prose-sm sm:prose md:prose-md"
-        />
-      </div>
-      <div>
         <h4 className="font-semibold mb-2">Content</h4>
         {renderToolbar(contentEditor)}
         <EditorContent
           editor={contentEditor}
           required
-          className="min-h-[250px] max-h-[400px] overflow-y-auto p-3 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-blue-400 focus:outline-none prose prose-sm sm:prose md:prose-md"
+          className="min-h-[250px] max-h-[600px] overflow-y-auto p-3 border border-gray-200 rounded-md focus-within:ring-2 focus-within:ring-blue-400 focus:outline-none prose prose-sm sm:prose md:prose-md"
         />
       </div>
     </div>
