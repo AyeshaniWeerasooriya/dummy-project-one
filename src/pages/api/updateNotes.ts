@@ -23,7 +23,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "POST") {
+  if (req.method !== "PUT") {
     return res
       .status(405)
       .json({ success: false, error: "Method not allowed" });
@@ -39,10 +39,33 @@ export default async function handler(
     const decoded = await getAuth().verifyIdToken(idToken);
     const uid = decoded.uid;
 
-    const { title, content } = req.body;
-    if (!content) {
-      return res.status(400).json({ success: false, error: "Missing content" });
+    const { id, title, content } = req.body;
+
+    if (!id || !content) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing id or content" });
     }
+
+    const dir = path.join(process.cwd(), "markdown-files", uid);
+    const metaPath = path.join(dir, "notes.json");
+
+    if (!fs.existsSync(metaPath)) {
+      return res
+        .status(404)
+        .json({ success: false, error: "No notes metadata found" });
+    }
+
+    const notesMeta = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
+
+    const noteIndex = notesMeta.findIndex((n: any) => n.id === String(id));
+
+    if (noteIndex === -1) {
+      return res.status(404).json({ success: false, error: "Note not found" });
+    }
+
+    const fileName = notesMeta[noteIndex].fileName;
+    const filePath = path.join(dir, fileName);
 
     const titleMarkdown = title;
     const markdown = turndown.turndown(content);
@@ -52,36 +75,16 @@ export default async function handler(
     // const markdown = converter.makeMarkdown(content);
     // const fullContent = `# ${titleMarkdown}\n\n${markdown}`;
 
-    const dir = path.join(process.cwd(), "markdown-files", uid);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    const fileName = `${Date.now()}.md`;
-    const filePath = path.join(dir, fileName);
     fs.writeFileSync(filePath, fullContent, "utf-8");
 
-    const metaPath = path.join(dir, "notes.json");
-    let notesMeta: any[] = [];
+    notesMeta[noteIndex].title = titleMarkdown;
+    notesMeta[noteIndex].updatedAt = new Date().toISOString();
 
-    if (fs.existsSync(metaPath)) {
-      const raw = fs.readFileSync(metaPath, "utf-8");
-      notesMeta = JSON.parse(raw);
-    }
-
-    const newNote = {
-      id: fileName.replace(".md", ""),
-      title: titleMarkdown,
-      fileName,
-      createdAt: new Date().toISOString(),
-    };
-
-    notesMeta.push(newNote);
     fs.writeFileSync(metaPath, JSON.stringify(notesMeta, null, 2), "utf-8");
 
     return res.status(200).json({ success: true, file: fileName });
   } catch (err: any) {
-    console.error("Error saving note:", err);
+    console.error("Error updating note:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 }

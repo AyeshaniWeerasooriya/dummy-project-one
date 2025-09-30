@@ -2,20 +2,24 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Calendar } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { Calendar, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { auth } from "@/lib/firebase";
+import { Button } from "@/app/components/ui/button";
 
 interface Note {
+  id: string;
   title: string;
-  html: string;
+  content: string;
   createdAt: string;
 }
 
 export default function NotePage() {
   const params = useParams();
   const noteid = typeof params?.noteid === "string" ? params.noteid : "";
+  const router = useRouter();
+
   const { user } = useAuth();
 
   const [note, setNote] = useState<Note | null>(null);
@@ -43,7 +47,7 @@ export default function NotePage() {
         if (!res.ok || !data.success) {
           throw new Error(data.error || "Failed to fetch note");
         }
-
+        console.log(data, "===============data ");
         setNote(data.note);
       } catch (err: any) {
         setError(err.message);
@@ -54,6 +58,42 @@ export default function NotePage() {
 
     fetchNote();
   }, [user, noteid]);
+
+  const handleEdit = () => {
+    if (!note) return;
+    router.push(`/user-notes?edit=${note.id}`);
+  };
+
+  const handleDelete = async () => {
+    if (!note) return;
+
+    if (!confirm("Are you sure you want to delete this note?")) return;
+
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("User not authenticated");
+
+      const idToken = await user.getIdToken();
+
+      const res = await fetch("/api/deleteNotes", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ noteId: note.id }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete note");
+      }
+
+      router.push("/user-notes");
+    } catch (err: any) {
+      alert(`Delete failed: ${err.message}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -71,19 +111,37 @@ export default function NotePage() {
 
   return (
     <div className="flex justify-center bg-gray-100 min-h-screen py-10">
-      <article className="w-full max-w-4xl bg-white rounded-md shadow-xl p-8 flex flex-col gap-6 border border-gray-200">
+      <article className="relative w-full max-w-4xl bg-white rounded-md shadow-xl p-12 flex flex-col gap-6 border border-gray-200">
+        <div className="absolute top-12 right-12 flex space-x-2">
+          <Button
+            onClick={handleEdit}
+            className="p-1 rounded hover:bg-gray-200 bg-indigo-100 hover:cursor-pointer"
+            title="Edit"
+          >
+            <Pencil size={16} className="text-gray-600" />
+          </Button>
+
+          <Button
+            onClick={handleDelete}
+            className="p-1 rounded hover:bg-gray-200 bg-indigo-100 hover:cursor-pointer"
+            title="Delete"
+          >
+            <Trash2 size={16} className="text-gray-600" />
+          </Button>
+        </div>
+
         <h1
-          className="text-xl md:text-2xl font-semibold mb-2 text-black tracking-tight  border-b-1 pb-5"
+          className="text-2xl md:text-3xl font-bold text-black tracking-tight"
           dangerouslySetInnerHTML={{ __html: note.title }}
         />
-        <section
-          className="prose prose-lg md:prose-xl text-black mb-6 max-w-none"
-          dangerouslySetInnerHTML={{ __html: note.html }}
-        />
-        <footer className="flex items-center gap-2 text-indigo-700 text-sm border-t pt-3">
+        <div className="flex items-center gap-2 text-indigo-700 text-xs border-b pb-7 border-indigo-100 italic">
           <Calendar size={16} />
           <span>Created at: {new Date(note.createdAt).toLocaleString()}</span>
-        </footer>
+        </div>
+        <section
+          className="prose prose-lg md:prose-xl text-black mb-6 max-w-none text-justify"
+          dangerouslySetInnerHTML={{ __html: note.content }}
+        />
       </article>
     </div>
   );

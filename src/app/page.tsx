@@ -14,7 +14,7 @@ export default function Home() {
     console.log("Firebase current user:", auth.currentUser);
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        router.push("/user-editor");
+        router.push("/user-notes");
       } else {
         setCheckingAuth(false);
       }
@@ -46,7 +46,7 @@ export default function Home() {
             Welcome to our
           </h1>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-snug drop-shadow-lg mt-2">
-            Learning Management System
+            StudyFlow
           </h1>
           <div className="mt-4 w-24 h-1 bg-indigo-400 rounded-full animate-pulse"></div>
         </div>

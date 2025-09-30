@@ -5,6 +5,8 @@ import path from "path";
 import { marked } from "marked";
 import { getAuth } from "firebase-admin/auth";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
+import converter from "@/types/showdown";
+import md from "@/types/markdown";
 
 if (!getApps().length) {
   initializeApp({
@@ -58,8 +60,13 @@ export default async function handler(
 
     results = results.map((note: any) => ({
       ...note,
-      title: marked.parse(note.title),
+      title: md.render(note.title),
     }));
+
+    // results = results.map((note: any) => ({
+    //   ...note,
+    //   title: converter.makeHtml(note.title),
+    // }));
 
     return res.status(200).json({ success: true, notes: results });
   } catch (err: any) {

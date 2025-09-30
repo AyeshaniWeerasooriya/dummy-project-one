@@ -16,7 +16,7 @@ export function LoginAlertBox() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       console.log("Login successful");
-      router.push("./user-editor");
+      router.push("./user-notes");
     } catch (error) {
       console.error("Login failed:", error);
     }

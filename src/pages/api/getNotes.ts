@@ -2,8 +2,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
-import { marked } from "marked";
+// import { marked } from "marked";
 import admin from "@/lib/firebaseAdmin";
+import converter from "@/types/showdown";
+import md from "@/types/markdown";
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -37,8 +39,13 @@ export default async function handler(
         const firstLine = lines[0].replace(/^#\s*/, "");
         const titleMarkdown = firstLine.trim() || "Untitled";
 
-        const titleHtml = marked.parse(titleMarkdown);
-        const contentHtml = marked.parse(markdown);
+        const titleHtml = titleMarkdown;
+        const contentHtml = md.render(markdown);
+
+        console.log(contentHtml, "=================================///");
+
+        // const titleHtml = titleMarkdown;
+        // const contentHtml = converter.makeHtml(markdown);
 
         const timestamp = Number(path.basename(file, ".md"));
         const createdAt = !isNaN(timestamp)
@@ -48,7 +55,7 @@ export default async function handler(
         return {
           id: timestamp,
           title: titleHtml,
-          html: contentHtml,
+          content: contentHtml,
           createdAt,
         };
       });

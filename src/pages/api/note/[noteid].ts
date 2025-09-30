@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import { marked } from "marked";
 import admin from "@/lib/firebaseAdmin";
+import converter from "@/types/showdown";
+import md from "@/types/markdown";
 
 export default async function handler(
   req: NextApiRequest,
@@ -51,8 +53,11 @@ export default async function handler(
 
     const contentWithoutTitle = lines.slice(1).join("\n").trim();
 
-    const titleHtml = marked.parse(firstLine);
-    const contentHtml = marked.parse(contentWithoutTitle);
+    const titleHtml = firstLine;
+    const contentHtml = md.render(contentWithoutTitle);
+    console.log(contentHtml, "===============  note");
+    // const titleHtml = firstLine;
+    // const contentHtml = converter.makeHtml(contentWithoutTitle);
 
     const createdAt = new Date(Number(noteid)).toISOString();
 
@@ -61,7 +66,7 @@ export default async function handler(
       note: {
         id: Number(noteid),
         title: titleHtml,
-        html: contentHtml,
+        content: contentHtml,
         createdAt,
       },
     });
