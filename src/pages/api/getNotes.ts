@@ -42,8 +42,6 @@ export default async function handler(
         const titleHtml = titleMarkdown;
         const contentHtml = md.render(markdown);
 
-        console.log(contentHtml, "=================================///");
-
         // const titleHtml = titleMarkdown;
         // const contentHtml = converter.makeHtml(markdown);
 

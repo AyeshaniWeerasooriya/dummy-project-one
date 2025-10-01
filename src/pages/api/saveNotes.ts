@@ -6,8 +6,9 @@ import path from "path";
 import { getAuth } from "firebase-admin/auth";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import converter from "@/types/showdown";
+import turndown from "@/types/turndown";
 
-const turndown = new TurndownService();
+// const turndown = new TurndownService();
 
 if (!getApps().length) {
   initializeApp({
@@ -47,6 +48,9 @@ export default async function handler(
     const titleMarkdown = title;
     const markdown = turndown.turndown(content);
     const fullContent = `# ${titleMarkdown}\n\n${markdown}`;
+
+    console.log(content, "*********************content");
+    console.log(markdown, "********************markdown");
 
     // const titleMarkdown = title;
     // const markdown = converter.makeMarkdown(content);

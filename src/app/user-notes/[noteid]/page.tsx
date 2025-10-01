@@ -47,7 +47,6 @@ export default function NotePage() {
         if (!res.ok || !data.success) {
           throw new Error(data.error || "Failed to fetch note");
         }
-        console.log(data, "===============data ");
         setNote(data.note);
       } catch (err: any) {
         setError(err.message);
@@ -139,7 +138,13 @@ export default function NotePage() {
           <span>Created at: {new Date(note.createdAt).toLocaleString()}</span>
         </div>
         <section
-          className="prose prose-lg md:prose-xl text-black mb-6 max-w-none text-justify"
+          className="prose prose-lg md:prose-xl text-black mb-6 max-w-none text-justify 
+             [&_ul]:list-disc [&_ul]:pl-6 
+             [&_ol]:list-decimal [&_ol]:pl-6 
+             [&_strike]:line-through [&_s]:line-through
+             [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-3
+             [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-2
+             [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-2"
           dangerouslySetInnerHTML={{ __html: note.content }}
         />
       </article>

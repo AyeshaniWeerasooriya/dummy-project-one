@@ -37,16 +37,12 @@ export default async function handler(
     const uid = decoded.uid;
 
     const { noteId } = req.body;
-    console.log(noteId, "================NoteId");
     if (!noteId) {
       return res.status(400).json({ success: false, error: "Missing noteId" });
     }
 
     const dir = path.join(process.cwd(), "markdown-files", uid);
     const metaPath = path.join(dir, "notes.json");
-
-    console.log(dir, "================dir");
-    console.log(metaPath, "================MetaPath");
 
     if (!fs.existsSync(metaPath)) {
       return res.status(404).json({ success: false, error: "No notes found" });
@@ -55,15 +51,11 @@ export default async function handler(
     const notesMeta: any[] = JSON.parse(fs.readFileSync(metaPath, "utf-8"));
     const noteIndex = notesMeta.findIndex((note) => note.id === String(noteId));
 
-    console.log(notesMeta, "================notesMeta");
-    console.log(noteIndex, "================noteIndex");
-
     if (noteIndex === -1) {
       return res.status(404).json({ success: false, error: "Note not found" });
     }
 
     const filePath = path.join(dir, notesMeta[noteIndex].fileName);
-    console.log(notesMeta[noteIndex].fileName, "================filePath");
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }

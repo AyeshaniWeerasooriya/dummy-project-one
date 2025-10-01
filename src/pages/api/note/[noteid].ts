@@ -55,7 +55,7 @@ export default async function handler(
 
     const titleHtml = firstLine;
     const contentHtml = md.render(contentWithoutTitle);
-    console.log(contentHtml, "===============  note");
+
     // const titleHtml = firstLine;
     // const contentHtml = converter.makeHtml(contentWithoutTitle);
 

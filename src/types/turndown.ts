@@ -1,8 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-declare module "turndown" {
-  export default class TurndownService {
-    constructor(options?: any);
-    turndown(html: string): string;
-    addRule(key: string, rule: any): void;
-  }
-}
+import TurndownService from "turndown";
+
+const turndown = new TurndownService({
+  headingStyle: "atx",
+  codeBlockStyle: "fenced",
+  strongDelimiter: "**",
+  emDelimiter: "_",
+  bulletListMarker: "-",
+});
+
+turndown.addRule("strike", {
+  filter: ["s", "del"],
+  replacement: (content: string) => `~~${content}~~`,
+});
+
+turndown.addRule("underline", {
+  filter: "u",
+  replacement: (content: string) => `<u>${content}</u>`,
+});
+
+export default turndown;

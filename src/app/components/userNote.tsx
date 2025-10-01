@@ -28,7 +28,6 @@ export default function NoteEditor({
 
   useEffect(() => {
     if (existingNote) {
-      console.log(existingNote, "------------------");
       setTitle(existingNote.title);
       setContent(existingNote.content);
     } else {
